@@ -59,12 +59,18 @@ async function run() {
       res.send(result)
     });
 
-
-
     // post api
     app.post("/carts", async(req, res) => {
       const cartItem = req.body;
       const result = await cartCollection.insertOne(cartItem);
+      res.send(result)
+    });
+
+    // delete from cart api
+    app.delete("/carts/:id", async(req, res) => {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+      const result = await cartCollection.deleteOne(query);
       res.send(result)
     })
 
