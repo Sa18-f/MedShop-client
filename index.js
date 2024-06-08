@@ -28,6 +28,7 @@ async function run() {
     await client.connect();
 
     const allMedicine = client.db("medinestDb").collection("medicine");
+    const cartCollection = client.db("medinestDb").collection("carts");
 
     // get data by category
     app.get('/medicine/:category', async (req, res) => {
@@ -48,6 +49,21 @@ async function run() {
       const id = req.params.id;
       const query = {_id: new ObjectId(id)};
       const result = await allMedicine.findOne(query);
+      res.send(result)
+    })
+
+    // carts collection
+    // get api
+    app.get("/carts", async (req, res) => {
+      const result = await cartCollection.find().toArray();
+      res.send(result)
+    });
+
+
+    // post api
+    app.post("/carts", async(req, res) => {
+      const cartItem = req.body;
+      const result = await cartCollection.insertOne(cartItem);
       res.send(result)
     })
 
