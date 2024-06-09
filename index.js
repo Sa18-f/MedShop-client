@@ -29,6 +29,19 @@ async function run() {
 
     const allMedicine = client.db("medinestDb").collection("medicine");
     const cartCollection = client.db("medinestDb").collection("carts");
+    const userCollection = client.db("medinestDb").collection("users");
+
+    // users related api
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const query = {email: user.email};
+      const existingUser = await userCollection.findOne(query);
+      if(existingUser){
+        return res.send({message: "user already exists", insertedId: null})
+      }
+      const result = await userCollection.insertOne(user);
+      res.send(result)
+    })
 
     // get data by category
     app.get('/medicine/:category', async (req, res) => {
@@ -55,6 +68,8 @@ async function run() {
     // carts collection
     // get api
     app.get("/carts", async (req, res) => {
+      // const email = req.query.email;
+      // const query = {email: email};
       const result = await cartCollection.find().toArray();
       res.send(result)
     });
