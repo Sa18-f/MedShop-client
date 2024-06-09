@@ -72,7 +72,7 @@ async function run() {
       res.send({ admin })
     })
 
-    
+
     // jwt related api
     app.post("/jwt", async (req, res) => {
       const user = req.body;
@@ -142,11 +142,28 @@ async function run() {
       res.send(result)
     })
     // delete a medicine
-    app.delete("/medicine/:id",verifyToken, verifyAdmin, async (req, res) => {
+    app.delete("/medicine/:id", verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await allMedicine.deleteOne(query);
       res.send(result)
+    });
+    // update a medicine
+    app.patch('/medicine/:id', async (req, res) => {
+      const item = req.body;
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) }
+      const updatedDoc = {
+        $set: {
+          name: item.name,
+          category: item.category,
+          price: item.price_per_unit,
+          image: item.image
+        }
+      }
+
+      const result = await allMedicine.updateOne(filter, updatedDoc)
+      res.send(result);
     })
 
     // carts collection
