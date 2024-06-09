@@ -44,6 +44,35 @@ async function run() {
         next()
       })
     }
+
+    // use verify admin after verifyToken
+    const verifyAdmin = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      const isAdmin = user?.role === 'admin';
+      if (!isAdmin) {
+        return res.status(403).send({ message: 'forbidden access' });
+      }
+      next();
+    }
+
+    // check admin 
+    app.get("/users/admin/:email", verifyToken, async (req, res) => {
+      const email = req.params.email;
+      if (email !== req.decoded.email) {
+        return res.status(403).send({ message: "forbidden access" })
+      }
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      let admin = false;
+      if (user) {
+        admin = user?.role === 'admin'
+      }
+      res.send({ admin })
+    })
+
+    
     // jwt related api
     app.post("/jwt", async (req, res) => {
       const user = req.body;
@@ -55,7 +84,7 @@ async function run() {
 
     // users related api
     // get api
-    app.get("/users", verifyToken, async (req, res) => {
+    app.get("/users", verifyToken, verifyAdmin, async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result)
     })
@@ -71,7 +100,7 @@ async function run() {
       res.send(result)
     });
 
-    app.patch('/users/admin/:id', async (req, res) => {
+    app.patch('/users/admin/:id', verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const updatedDoc = {
@@ -84,7 +113,7 @@ async function run() {
     })
 
     // user delete api
-    app.delete('/users/:id', async (req, res) => {
+    app.delete('/users/:id', verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) }
       const result = await userCollection.deleteOne(query);
