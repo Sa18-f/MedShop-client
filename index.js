@@ -141,6 +141,13 @@ async function run() {
       const result = await allMedicine.findOne(query);
       res.send(result)
     })
+    // delete a medicine
+    app.delete("/medicine/:id",verifyToken, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await allMedicine.deleteOne(query);
+      res.send(result)
+    })
 
     // carts collection
     // get api
