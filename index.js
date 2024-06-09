@@ -32,15 +32,41 @@ async function run() {
     const userCollection = client.db("medinestDb").collection("users");
 
     // users related api
+    // get api
+    app.get("/users", async (req, res) => {
+      const result = await userCollection.find().toArray();
+      res.send(result)
+    })
+    // post
     app.post("/users", async (req, res) => {
       const user = req.body;
-      const query = {email: user.email};
+      const query = { email: user.email };
       const existingUser = await userCollection.findOne(query);
-      if(existingUser){
-        return res.send({message: "user already exists", insertedId: null})
+      if (existingUser) {
+        return res.send({ message: "user already exists", insertedId: null })
       }
       const result = await userCollection.insertOne(user);
       res.send(result)
+    });
+
+    app.patch('/users/admin/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          role: 'admin'
+        }
+      }
+      const result = await userCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    })
+
+    // user delete api
+    app.delete('/users/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await userCollection.deleteOne(query);
+      res.send(result);
     })
 
     // get data by category
@@ -60,7 +86,7 @@ async function run() {
     // get the specific medicine 
     app.get("/medicine/:id", async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)};
+      const query = { _id: new ObjectId(id) };
       const result = await allMedicine.findOne(query);
       res.send(result)
     })
@@ -68,23 +94,23 @@ async function run() {
     // carts collection
     // get api
     app.get("/carts", async (req, res) => {
-      // const email = req.query.email;
-      // const query = {email: email};
-      const result = await cartCollection.find().toArray();
+      const email = req.query.email;
+      const query = { email: email };
+      const result = await cartCollection.find(query).toArray();
       res.send(result)
     });
 
     // post api
-    app.post("/carts", async(req, res) => {
+    app.post("/carts", async (req, res) => {
       const cartItem = req.body;
       const result = await cartCollection.insertOne(cartItem);
       res.send(result)
     });
 
     // delete from cart api
-    app.delete("/carts/:id", async(req, res) => {
+    app.delete("/carts/:id", async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)};
+      const query = { _id: new ObjectId(id) };
       const result = await cartCollection.deleteOne(query);
       res.send(result)
     })
