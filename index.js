@@ -135,7 +135,7 @@ async function run() {
     });
 
     // get the specific medicine 
-    app.get("/medicine/:id", async (req, res) => {
+    app.get("/medicines/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await allMedicine.findOne(query);
@@ -149,7 +149,7 @@ async function run() {
       res.send(result)
     });
     // update a medicine
-    app.patch('/medicine/:id', async (req, res) => {
+    app.patch('/medicines/:id', async (req, res) => {
       const item = req.body;
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) }
@@ -157,7 +157,8 @@ async function run() {
         $set: {
           name: item.name,
           category: item.category,
-          price: item.price_per_unit,
+          price_per_unit: item.price_per_unit,
+          description: item.description,
           image: item.image
         }
       }
