@@ -127,6 +127,12 @@ async function run() {
       res.send(result)
     })
 
+    // post medicine
+    app.post('/medicine', async (req, res) => {
+      const item = req.body;
+      const result = await allMedicine.insertOne(item);
+      res.send(result);
+    });
 
     // get all medicines
     app.get("/medicine", async (req, res) => {
