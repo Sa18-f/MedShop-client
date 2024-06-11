@@ -268,6 +268,18 @@ async function run() {
       const result = await paymentCollection.find().toArray();
       res.send(result);
     });
+    // Endpoint to update payment status
+    app.patch("/payments/:id", verifyToken, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          status: 'paid'
+        }
+      };
+      const result = await paymentCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
 
 
     // Send a ping to confirm a successful connection
