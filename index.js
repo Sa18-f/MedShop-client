@@ -47,6 +47,23 @@ async function run() {
       })
     }
 
+    // Verify Seller Middleware
+    const verifySeller = async (req, res, next) => {
+      try {
+        const email = req.decoded.email;
+        const query = { email: email };
+        const user = await userCollection.findOne(query);
+        const isSeller = user?.role === 'seller';
+        if (!isSeller) {
+          return res.status(403).send({ message: 'Forbidden access' });
+        }
+        next();
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error' });
+      }
+    };
+
     // use verify admin after verifyToken
     const verifyAdmin = async (req, res, next) => {
       const email = req.decoded.email;
@@ -58,6 +75,7 @@ async function run() {
       }
       next();
     }
+
 
     // check admin 
     app.get("/users/admin/:email", verifyToken, async (req, res) => {
@@ -72,6 +90,21 @@ async function run() {
         admin = user?.role === 'admin'
       }
       res.send({ admin })
+    });
+
+    // check seller 
+    app.get("/users/seller/:email", verifyToken, async (req, res) => {
+      const email = req.params.email;
+      if (email !== req.decoded.email) {
+        return res.status(403).send({ message: "forbidden access" })
+      }
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      let seller = false;
+      if (user) {
+        seller = user?.role === 'seller'
+      }
+      res.send({ seller })
     });
 
     // stats or analytics
@@ -127,7 +160,7 @@ async function run() {
       const result = await userCollection.insertOne(user);
       res.send(result)
     });
-
+    // update to admin
     app.patch('/users/admin/:id', verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
@@ -138,7 +171,43 @@ async function run() {
       }
       const result = await userCollection.updateOne(filter, updatedDoc);
       res.send(result);
-    })
+    });
+
+    // Update user role to seller
+    app.patch('/users/seller/:id', verifyToken, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          role: 'seller'
+        }
+      }
+      try {
+        const result = await userCollection.updateOne(filter, updatedDoc);
+        res.send(result);
+      } catch (error) {
+        console.error(error);
+        res.status(500).send({ error: "Internal server error" });
+      }
+    });
+
+    // Update user role to normal
+    app.patch('/users/normal/:id', verifyToken, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          role: 'normal'
+        }
+      }
+      try {
+        const result = await userCollection.updateOne(filter, updatedDoc);
+        res.send(result);
+      } catch (error) {
+        console.error(error);
+        res.status(500).send({ error: "Internal server error" });
+      }
+    });
 
     // user delete api
     app.delete('/users/:id', verifyToken, verifyAdmin, async (req, res) => {
@@ -280,6 +349,22 @@ async function run() {
       const result = await paymentCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
+
+    // Add the following endpoint in your backend code
+    app.get('/sales', verifyToken, verifyAdmin, async (req, res) => {
+      const { startDate, endDate } = req.query;
+
+      const query = {
+        date: {
+          $gte: new Date(startDate),
+          $lte: new Date(endDate),
+        },
+      };
+
+      const sales = await paymentCollection.find(query).toArray();
+      res.send(sales);
+    });
+
 
 
     // Send a ping to confirm a successful connection
