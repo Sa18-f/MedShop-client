@@ -270,6 +270,8 @@ async function run() {
       res.send(result);
     })
 
+
+    // this should be deleted
     // post medicine
     app.post('/medicine', verifyToken, verifySeller, async (req, res) => {
       const item = req.body;
@@ -279,13 +281,18 @@ async function run() {
     });
 
     // get all medicines for a specific seller
-    app.get('/medicine/:email', async (req, res) => {
-      const sellerEmail = req.decoded.email;
-      console.log(sellerEmail)
-      const query = { sellerEmail: sellerEmail };
-      const result = await allMedicine.find(query).toArray();
-      res.send(result);
-    });
+    // app.get('/medicine/:email', async (req, res) => {
+    //   const sellerEmail = req.params.email;
+    //   const query = { sellerEmail: sellerEmail };
+    //   try {
+    //     const result = await allMedicine.find(query).toArray();
+    //     res.send(result);
+    //   } catch (error) {
+    //     console.error(error);
+    //     res.status(500).send({ message: 'Internal server error' });
+    //   }
+    // });
+
 
     // carts collection
     // get api
