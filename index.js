@@ -270,6 +270,23 @@ async function run() {
       res.send(result);
     })
 
+    // post medicine
+    app.post('/medicine', verifyToken, verifySeller, async (req, res) => {
+      const item = req.body;
+      item.sellerEmail = req.decoded.email; // Add seller's email
+      const result = await allMedicine.insertOne(item);
+      res.send(result);
+    });
+
+    // get all medicines for a specific seller
+    app.get('/medicine/:email', async (req, res) => {
+      const sellerEmail = req.decoded.email;
+      console.log(sellerEmail)
+      const query = { sellerEmail: sellerEmail };
+      const result = await allMedicine.find(query).toArray();
+      res.send(result);
+    });
+
     // carts collection
     // get api
     app.get("/carts", async (req, res) => {
